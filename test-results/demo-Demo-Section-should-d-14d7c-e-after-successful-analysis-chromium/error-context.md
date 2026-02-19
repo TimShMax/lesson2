@@ -1,0 +1,144 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e7]: V
+        - generic [ref=e8]: VerdictAI
+      - generic [ref=e9]:
+        - link "Features" [ref=e10] [cursor=pointer]:
+          - /url: "#features"
+        - link "How It Works" [ref=e11] [cursor=pointer]:
+          - /url: "#how-it-works"
+        - link "Demo" [ref=e12] [cursor=pointer]:
+          - /url: "#demo"
+      - link "Try Now" [ref=e14] [cursor=pointer]:
+        - /url: "#demo"
+    - generic [ref=e16]:
+      - generic [ref=e19]: MUST WATCH
+      - heading "Is It Worth Watching?" [level=1] [ref=e20]
+      - paragraph [ref=e21]: Paste a YouTube link. Get an AI-powered summary and verdict in seconds. No more wasting time on bad content.
+      - generic [ref=e22]:
+        - link "Try It Free" [ref=e23] [cursor=pointer]:
+          - /url: "#demo"
+          - generic [ref=e26]: Try It Free
+        - link "See How It Works" [ref=e27] [cursor=pointer]:
+          - /url: "#how-it-works"
+      - generic [ref=e28]:
+        - generic [ref=e29]: Powered by AI
+        - generic [ref=e31]: Results in ~5 sec
+        - generic [ref=e33]: Free to try
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - paragraph [ref=e40]: Features
+        - heading "Everything you need to decide" [level=2] [ref=e41]
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - img [ref=e46]
+          - heading "Instant Analysis" [level=3] [ref=e48]
+          - paragraph [ref=e49]: Paste a link and get results in under 5 seconds. No signup required.
+        - generic [ref=e50]:
+          - img [ref=e53]
+          - heading "AI-Powered Summaries" [level=3] [ref=e61]
+          - paragraph [ref=e62]: Our model extracts key points, themes, and the core message of any video.
+        - generic [ref=e63]:
+          - img [ref=e66]
+          - heading "Save Hours" [level=3] [ref=e69]
+          - paragraph [ref=e70]: Stop watching 45-minute videos to find out they were clickbait. Get the verdict first.
+        - generic [ref=e71]:
+          - img [ref=e74]
+          - heading "Streaming UI" [level=3] [ref=e76]
+          - paragraph [ref=e77]: Watch the summary appear in real-time, word by word. No loading spinners.
+    - generic [ref=e79]:
+      - generic [ref=e80]:
+        - paragraph [ref=e81]: How It Works
+        - heading "Three steps. Zero effort." [level=2] [ref=e82]
+      - generic [ref=e83]:
+        - generic [ref=e86]:
+          - generic [ref=e87]: "01"
+          - heading "Paste a YouTube Link" [level=3] [ref=e88]
+          - paragraph [ref=e89]: Drop any YouTube URL into the input field. We support videos of any length.
+        - generic [ref=e92]:
+          - generic [ref=e93]: "02"
+          - heading "AI Processes the Content" [level=3] [ref=e94]
+          - paragraph [ref=e95]: Our model analyzes the transcript, extracts key points, and generates a concise summary.
+        - generic [ref=e97]:
+          - generic [ref=e98]: "03"
+          - heading "Get Your Verdict" [level=3] [ref=e99]
+          - paragraph [ref=e100]: "Receive a streaming summary with a clear verdict badge: Must Watch, Meh, or Skip."
+    - generic [ref=e102]:
+      - generic [ref=e103]:
+        - paragraph [ref=e104]: Examples
+        - heading "Real verdicts, real time saved" [level=2] [ref=e105]
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - generic [ref=e108]:
+            - generic [ref=e111]: MUST WATCH
+            - generic [ref=e112]: 42:15
+          - generic [ref=e113]:
+            - heading "Building a SaaS in 48 hours" [level=3] [ref=e114]
+            - paragraph [ref=e115]: "@BuilderChannel"
+          - paragraph [ref=e116]: Step-by-step SaaS development with real deployment. Covers auth, payments, and database setup with practical code examples.
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - generic [ref=e121]: SKIP
+            - generic [ref=e122]: 28:33
+          - generic [ref=e123]:
+            - heading "10 AI Tools That Will BLOW Your Mind" [level=3] [ref=e124]
+            - paragraph [ref=e125]: "@TechHype"
+          - paragraph [ref=e126]: Clickbait title. Most tools mentioned are outdated or have been discontinued. No practical demonstrations provided.
+        - generic [ref=e127]:
+          - generic [ref=e128]:
+            - generic [ref=e131]: MEH
+            - generic [ref=e132]: 18:45
+          - generic [ref=e133]:
+            - heading "React vs Vue in 2025" [level=3] [ref=e134]
+            - paragraph [ref=e135]: "@DevCompare"
+          - paragraph [ref=e136]: Decent comparison but covers surface-level differences only. Nothing new for experienced developers.
+    - generic [ref=e138]:
+      - generic [ref=e139]:
+        - paragraph [ref=e140]: Live Demo
+        - heading "Try it yourself" [level=2] [ref=e141]
+      - generic [ref=e143]:
+        - img [ref=e144]
+        - textbox "https://youtube.com/watch?v=..." [disabled] [ref=e147]: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+        - button "Analyze" [disabled] [ref=e148]:
+          - text: Analyze
+          - img [ref=e149]
+      - generic [ref=e151]:
+        - generic [ref=e158]: verdict-ai / analysis
+        - generic [ref=e160]: ❤️ Признание в глубоких чувствах и вечной преданности партнеру. 🤝 Обещание никогда не бросать, не подводить и не оставлять в одиночестве. 😢 Клятва никогда не заставлять плакать, лгать или при
+    - generic [ref=e163]:
+      - heading "Stop wasting time on bad videos" [level=2] [ref=e164]
+      - paragraph [ref=e165]: Join thousands of people who get AI-powered verdicts before committing to long-form content. It takes 5 seconds.
+      - link "Get Started" [ref=e167] [cursor=pointer]:
+        - /url: "#demo"
+        - generic [ref=e170]: Get Started
+      - generic [ref=e171]:
+        - generic [ref=e172]:
+          - generic [ref=e173]: 12K+
+          - generic [ref=e174]: Videos Analyzed
+        - generic [ref=e175]:
+          - generic [ref=e176]: 4.2s
+          - generic [ref=e177]: Avg. Response
+        - generic [ref=e178]:
+          - generic [ref=e179]: 89%
+          - generic [ref=e180]: Accuracy Rate
+    - generic [ref=e182]:
+      - generic [ref=e183]:
+        - generic [ref=e185]: V
+        - generic [ref=e186]: VerdictAI
+      - generic [ref=e187]:
+        - link "Terms" [ref=e188] [cursor=pointer]:
+          - /url: "#"
+        - link "Privacy" [ref=e189] [cursor=pointer]:
+          - /url: "#"
+        - link "GitHub" [ref=e190] [cursor=pointer]:
+          - /url: "#"
+      - paragraph [ref=e191]: Deployed on Vercel
+  - button "Open Next.js Dev Tools" [ref=e197] [cursor=pointer]:
+    - img [ref=e198]
+  - alert [ref=e201]
+```

@@ -5,6 +5,18 @@
 
 const SUPADATA_API_BASE = 'https://api.supadata.ai/v1/youtube'
 
+// Таймаут для внешних API запросов (30 секунд)
+const API_TIMEOUT_MS = 30000
+
+/**
+ * Создаёт AbortController с таймаутом
+ */
+function createTimeoutController(timeoutMs: number = API_TIMEOUT_MS): AbortController {
+  const controller = new AbortController()
+  setTimeout(() => controller.abort(), timeoutMs)
+  return controller
+}
+
 /**
  * Ответ от Supadata API (реальная структура)
  */
@@ -62,21 +74,38 @@ export async function getVideoData(url: string): Promise<VideoData> {
     throw new Error('SUPADATA_API_KEY is not configured')
   }
 
-  console.log('[Supadata] Fetching transcript for:', url)
+  // Логирование только в development режиме
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Supadata] Fetching transcript for:', url)
+  }
 
-  const response = await fetch(`${SUPADATA_API_BASE}/transcript?url=${encodeURIComponent(url)}`, {
-    method: 'GET',
-    headers: {
-      'x-api-key': apiKey,
-      'Accept': 'application/json',
-    },
-  })
+  const controller = createTimeoutController()
 
-  console.log('[Supadata] Response status:', response.status)
+  let response: Response
+  try {
+    response = await fetch(`${SUPADATA_API_BASE}/transcript?url=${encodeURIComponent(url)}`, {
+      method: 'GET',
+      headers: {
+        'x-api-key': apiKey,
+        'Accept': 'application/json',
+      },
+      signal: controller.signal,
+    })
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('REQUEST_TIMEOUT')
+    }
+    throw error
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Supadata] Response status:', response.status)
+  }
 
   if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[Supadata] Error response:', errorText.substring(0, 500))
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[Supadata] Error status:', response.status)
+    }
 
     if (response.status === 404) {
       throw new Error('VIDEO_NOT_FOUND')
@@ -94,7 +123,10 @@ export async function getVideoData(url: string): Promise<VideoData> {
   }
 
   const data: SupadataResponse = await response.json()
-  console.log('[Supadata] Has content:', Array.isArray(data.content), 'Length:', data.content?.length)
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Supadata] Has content:', Array.isArray(data.content), 'Length:', data.content?.length)
+  }
 
   // Проверяем наличие контента
   if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
@@ -107,7 +139,9 @@ export async function getVideoData(url: string): Promise<VideoData> {
     .map((item) => item.text || '')
     .join(' ')
 
-  console.log('[Supadata] Transcript length:', transcriptText.length, 'chars')
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Supadata] Transcript length:', transcriptText.length, 'chars')
+  }
 
   // Извлекаем videoId из URL
   const videoId = extractVideoIdFromUrl(url) || 'unknown'
@@ -135,12 +169,15 @@ export async function checkSupadataHealth(): Promise<boolean> {
     return false
   }
 
+  const controller = createTimeoutController(10000) // 10 секунд для health check
+
   try {
     const response = await fetch(`${SUPADATA_API_BASE}/status`, {
       method: 'GET',
       headers: {
         'x-api-key': apiKey,
       },
+      signal: controller.signal,
     })
 
     return response.ok

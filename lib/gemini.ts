@@ -22,6 +22,45 @@ export interface GeminiAnalysisResult {
 }
 
 /**
+ * Санитизирует транскрипт для защиты от prompt injection
+ * Удаляет потенциально опасные паттерны
+ */
+function sanitizeTranscript(transcript: string): string {
+  let sanitized = transcript
+
+  // Удаляем потенциально опасные паттерны prompt injection
+  const dangerousPatterns = [
+    // Попытки переопределить системный промпт
+    /ignore (all )?(previous|above|earlier) (instructions|prompts|rules)/gi,
+    /disregard (all )?(previous|above|earlier)/gi,
+    /forget (all )?(previous|above|earlier)/gi,
+    /you are now?/gi,
+    /new instructions?:/gi,
+    /system:?/gi,
+    /assistant:?/gi,
+    /\[system\]/gi,
+    /\[assistant\]/gi,
+    /\[user\]/gi,
+    // Попытки экранирования
+    /```/g,
+    /~~~\s*json/gi,
+    /<\|.*?\|>/g,  // Специальные токены
+  ]
+
+  for (const pattern of dangerousPatterns) {
+    sanitized = sanitized.replace(pattern, '[REDACTED]')
+  }
+
+  // Ограничиваем максимальную длину
+  const maxLength = 60000
+  if (sanitized.length > maxLength) {
+    sanitized = sanitized.substring(0, maxLength) + '...'
+  }
+
+  return sanitized
+}
+
+/**
  * Системный промпт для анализа видео
  */
 const SYSTEM_PROMPT = `Ты — ассистент, который экономит время. Твоя задача — проанализировать текст видео и вернуть JSON.
@@ -66,13 +105,13 @@ export async function analyzeTranscript(transcript: string): Promise<GeminiAnaly
     throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is not configured')
   }
 
-  // Ограничиваем длину транскрипта для оптимизации
-  const maxLength = 60000
-  const truncatedTranscript = transcript.length > maxLength
-    ? transcript.substring(0, maxLength) + '...'
-    : transcript
+  // Санитизируем транскрипт для защиты от prompt injection
+  const sanitizedTranscript = sanitizeTranscript(transcript)
 
-  console.log('[Gemini] Sending request, transcript length:', truncatedTranscript.length)
+  // Логирование только в development режиме
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Gemini] Sending request, transcript length:', sanitizedTranscript.length)
+  }
 
   const model = genAI.getGenerativeModel({
     model: 'gemini-flash-lite-latest',
@@ -86,14 +125,16 @@ export async function analyzeTranscript(transcript: string): Promise<GeminiAnaly
   const fullPrompt = `${SYSTEM_PROMPT}
 
 Транскрипт видео:
-${truncatedTranscript}`
+${sanitizedTranscript}`
 
   try {
     const result = await model.generateContent(fullPrompt)
     const responseText = result.response.text()
 
-    console.log('[Gemini] Response length:', responseText.length)
-    console.log('[Gemini] Response preview:', responseText.substring(0, 500))
+    // Логирование только в development режиме
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Gemini] Response length:', responseText.length)
+    }
 
     // Попытка очистить response от markdown кодблоков
     let cleanResponse = responseText.trim()
@@ -105,21 +146,20 @@ ${truncatedTranscript}`
 
     // Парсим JSON ответ
     const parsedResult = JSON.parse(cleanResponse) as GeminiAnalysisResult
-    console.log('[Gemini] Parsed result:', JSON.stringify(parsedResult, null, 2))
 
     // Валидируем результат
     if (!isValidAnalysisResult(parsedResult)) {
-      console.error('[Gemini] Invalid result structure:', parsedResult)
+      console.error('[Gemini] Invalid result structure')
       throw new Error('Invalid AI response structure')
     }
 
     return parsedResult
   } catch (error) {
     if (error instanceof SyntaxError) {
-      console.error('[Geminey] JSON parse error:', error)
+      console.error('[Gemini] JSON parse error')
       throw new Error('AI_RESPONSE_PARSE_ERROR')
     }
-    console.error('[Gemini] Analysis error:', error)
+    console.error('[Gemini] Analysis error')
     throw error
   }
 }
@@ -129,47 +169,38 @@ ${truncatedTranscript}`
  */
 function isValidAnalysisResult(data: unknown): data is GeminiAnalysisResult {
   if (!data || typeof data !== 'object') {
-    console.log('[Gemini] Invalid data type:', typeof data)
     return false
   }
 
   const result = data as Record<string, unknown>
 
-  console.log('[Gemini] Validating keys:', Object.keys(result))
-
   // Проверяем verdict
   if (typeof result.verdict !== 'string' || !['MUST_WATCH', 'SKIP', 'RECAP_ONLY'].includes(result.verdict)) {
-    console.log('[Gemini] Invalid verdict:', result.verdict)
     return false
   }
 
   // Проверяем verdictLabel
   if (typeof result.verdictLabel !== 'string') {
-    console.log('[Gemini] Invalid verdictLabel:', result.verdictLabel)
     return false
   }
 
   // Проверяем verdictDescription
   if (typeof result.verdictDescription !== 'string') {
-    console.log('[Gemini] Invalid verdictDescription:', result.verdictDescription)
     return false
   }
 
   // Проверяем summary
   if (!Array.isArray(result.summary)) {
-    console.log('[Gemini] Summary is not array:', result.summary)
     return false
   }
 
   for (let i = 0; i < result.summary.length; i++) {
     const item = result.summary[i]
     if (!item || typeof item !== 'object') {
-      console.log(`[Gemini] Summary[${i}] is not object`)
       return false
     }
     const summaryItem = item as Record<string, unknown>
     if (typeof summaryItem.emoji !== 'string' || typeof summaryItem.text !== 'string') {
-      console.log(`[Gemini] Summary[${i}] invalid:`, summaryItem)
       return false
     }
   }

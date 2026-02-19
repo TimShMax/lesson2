@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
+import { UserMenu } from '@/components/user-menu'
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -29,12 +30,7 @@ export function Header() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <a
-            href="#demo"
-            className="inline-flex h-8 items-center rounded-md border border-border px-3 text-sm font-medium transition-colors hover:bg-accent"
-          >
-            Try Now
-          </a>
+          <UserMenu />
         </div>
 
         <button
@@ -53,6 +49,9 @@ export function Header() {
             <a href="#features" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Features</a>
             <a href="#how-it-works" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>How It Works</a>
             <a href="#demo" className="text-sm text-muted-foreground" onClick={() => setMobileOpen(false)}>Demo</a>
+            <div className="pt-2 border-t border-border">
+              <UserMenu />
+            </div>
           </div>
         </div>
       )}

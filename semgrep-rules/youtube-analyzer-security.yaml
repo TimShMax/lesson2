@@ -1,0 +1,190 @@
+rules:
+  # ============================================================================
+  # API Key Security
+  # ============================================================================
+  
+  - id: hardcoded-api-key
+    languages: [typescript, javascript]
+    message: "Possible hardcoded API key detected. Use environment variables instead."
+    severity: ERROR
+    pattern-either:
+      - pattern: |
+          $VAR = "sk-..."
+      - pattern: |
+          $VAR = "AIza..."
+      - pattern: |
+          $VAR = "ghp_..."
+      - pattern: |
+          $VAR = "xoxb-..."
+    metadata:
+      category: security
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      owasp: "A07:2021 - Identification and Authentication Failures"
+
+  - id: api-key-in-url
+    languages: [typescript, javascript]
+    message: "API key exposed in URL. Pass via headers instead."
+    severity: ERROR
+    pattern: |
+      fetch("..." + $KEY + "...", ...)
+
+  # ============================================================================
+  # Input Validation
+  # ============================================================================
+  
+  - id: missing-input-validation
+    languages: [typescript]
+    message: "Request body parsed without validation. Use Zod or similar schema validation."
+    severity: WARNING
+    patterns:
+      - pattern: |
+          await $REQ.json()
+      - pattern-not-inside: |
+          $SCHEMA.safeParse(...)
+      - pattern-not-inside: |
+          $SCHEMA.parse(...)
+      - pattern-not-inside: |
+          validateSummarizeRequest(...)
+    metadata:
+      category: security
+      owasp: "A03:2021 - Injection"
+
+  - id: unvalidated-url-in-fetch
+    languages: [typescript, javascript]
+    message: "User-provided URL used in fetch without validation. Potential SSRF vulnerability."
+    severity: WARNING
+    mode: taint
+    pattern-sources:
+      - pattern: |
+          $REQ.json()
+      - pattern: |
+          request.args.get(...)
+    pattern-sinks:
+      - pattern: |
+          fetch($URL, ...)
+    pattern-sanitizers:
+      - pattern: |
+          encodeURIComponent(...)
+      - pattern: |
+          isValidYouTubeUrl(...)
+      - pattern: |
+          validateSummarizeRequest(...)
+
+  # ============================================================================
+  # Rate Limiting
+  # ============================================================================
+  
+  - id: api-endpoint-without-rate-limit
+    languages: [typescript]
+    message: "API endpoint may be missing rate limiting. Consider adding rate limiting for production."
+    severity: INFO
+    patterns:
+      - pattern-inside: |
+          export async function POST($REQ: Request) { ... }
+      - pattern-not-inside: |
+          checkRateLimit(...)
+      - pattern: |
+          return NextResponse.json(...)
+
+  # ============================================================================
+  # Logging Security
+  # ============================================================================
+  
+  - id: sensitive-data-in-log
+    languages: [typescript, javascript]
+    message: "Possible sensitive data in console.log. Avoid logging API keys, tokens, or user data."
+    severity: WARNING
+    pattern-either:
+      - pattern: |
+          console.log(..., $VAR.apiKey, ...)
+      - pattern: |
+          console.log(..., $VAR.password, ...)
+      - pattern: |
+          console.log(..., $VAR.token, ...)
+      - pattern: |
+          console.log(..., $VAR.secret, ...)
+      - pattern: |
+          console.log(..., process.env.$SECRET, ...)
+
+  - id: verbose-error-logging
+    languages: [typescript, javascript]
+    message: "Detailed error information logged. Consider using generic error messages in production."
+    severity: INFO
+    pattern: |
+      console.error(..., error, ...)
+
+  # ============================================================================
+  # Request Security
+  # ============================================================================
+  
+  - id: fetch-without-timeout
+    languages: [typescript, javascript]
+    message: "Fetch request without timeout. Add AbortController for better reliability."
+    severity: WARNING
+    patterns:
+      - pattern: |
+          fetch($URL, { ... })
+      - pattern-not-inside: |
+          fetch(..., { ..., signal: ..., ... })
+
+  - id: missing-content-length-check
+    languages: [typescript]
+    message: "No Content-Length validation. Large payloads could cause DoS."
+    severity: INFO
+    patterns:
+      - pattern-inside: |
+          export async function POST($REQ: Request) { ... }
+      - pattern-not-inside: |
+          req.headers.get('content-length')
+      - pattern: |
+          await $REQ.json()
+
+  # ============================================================================
+  # Prompt Injection
+  # ============================================================================
+  
+  - id: llm-prompt-injection-risk
+    languages: [typescript, javascript]
+    message: "User content directly interpolated into LLM prompt. Consider sanitization."
+    severity: WARNING
+    patterns:
+      - pattern: |
+          `${$PROMPT} ... ${$USER_CONTENT}`
+      - pattern-not-inside: |
+          sanitizeTranscript(...)
+      - pattern-not-inside: |
+          sanitize(...)
+
+  # ============================================================================
+  # Environment Variables
+  # ============================================================================
+  
+  - id: missing-env-check
+    languages: [typescript, javascript]
+    message: "Environment variable used without existence check. Add validation at startup."
+    severity: INFO
+    patterns:
+      - pattern: |
+          process.env.$VAR
+      - pattern-not-inside: |
+          if (!process.env.$VAR) { ... }
+      - pattern-not-inside: |
+          process.env.$VAR || ''
+      - pattern-not-inside: |
+          process.env.$VAR ?? ''
+
+  # ============================================================================
+  # Error Handling
+  # ============================================================================
+  
+  - id: catch-block-reveals-internals
+    languages: [typescript, javascript]
+    message: "Catch block may reveal internal error details. Return generic error message."
+    severity: WARNING
+    patterns:
+      - pattern-inside: |
+          catch ($ERROR) { ... }
+      - pattern: |
+          return NextResponse.json({ error: $ERROR.message }, ...)
+      - pattern-not-inside: |
+          console.error(...)

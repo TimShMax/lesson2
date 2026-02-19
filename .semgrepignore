@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+dist/
+build/
+
+# Test files
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Generated files
+*.generated.ts
+
+# UI components (shadcn/ui - third party)
+components/ui/
+
+# Config files
+*.config.js
+*.config.mjs
+*.config.ts
+
+# Type declarations
+*.d.ts
+
+# Lock files
+package-lock.json
